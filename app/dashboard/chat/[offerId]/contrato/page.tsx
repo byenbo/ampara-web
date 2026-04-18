@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
 export const metadata = { title: 'Contrato — Ampara' }
@@ -7,10 +8,11 @@ export const metadata = { title: 'Contrato — Ampara' }
 export default async function ContratoPage({ params }: { params: Promise<{ offerId: string }> }) {
   const { offerId } = await params
   const supabase = await createClient()
+  const admin = createAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: offer } = await supabase
+  const { data: offer } = await admin
     .from('offers')
     .select('*, profiles(full_name, city, email), requests(user_id, amount, repayment_days, reason, city, repayment_type, repayment_description)')
     .eq('id', offerId)
@@ -22,7 +24,7 @@ export default async function ContratoPage({ params }: { params: Promise<{ offer
   const isBorrower = offer.requests?.user_id === user.id
   if (!isSupporter && !isBorrower) notFound()
 
-  const { data: borrowerProfile } = await supabase
+  const { data: borrowerProfile } = await admin
     .from('profiles')
     .select('full_name, city, email')
     .eq('id', offer.requests?.user_id)
