@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useUnreadCount } from '@/lib/hooks/useUnreadCount'
 import type { Profile } from '@/types'
 
 interface SidebarProps {
@@ -90,6 +91,7 @@ function SidebarContent({
   const router = useRouter()
   const supabase = createClient()
   const [loggingOut, setLoggingOut] = useState(false)
+  const unreadCount = useUnreadCount(profile.id)
 
   const visibleItems = navItems.filter(
     (item) => !item.roles || item.roles.includes(profile.role ?? '')
@@ -141,7 +143,12 @@ function SidebarContent({
                 <span className={isActive(item) ? 'text-primary-600' : 'text-neutral-400'}>
                   {item.icon}
                 </span>
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.href === '/dashboard/ofertas' && unreadCount > 0 && (
+                  <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-bold">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
             </li>
           ))}

@@ -38,6 +38,13 @@ export function OfferChat({ offerId, currentUserId }: OfferChatProps) {
   const fileRef = useRef<HTMLInputElement>(null)
   const lastIdRef = useRef<string | null>(null)
 
+  async function markRead() {
+    await supabase.from('offer_read_receipts').upsert(
+      { offer_id: offerId, user_id: currentUserId, last_read_at: new Date().toISOString() },
+      { onConflict: 'offer_id,user_id' }
+    )
+  }
+
   async function fetchMessages() {
     const { data } = await supabase
       .from('messages')
@@ -49,6 +56,7 @@ export function OfferChat({ offerId, currentUserId }: OfferChatProps) {
       setMessages(data as Message[])
       if (data.length > 0) lastIdRef.current = data[data.length - 1].id
     }
+    await markRead()
   }
 
   useEffect(() => {
