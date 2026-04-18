@@ -79,7 +79,13 @@ const navItems = [
   },
 ]
 
-export function Sidebar({ profile }: SidebarProps) {
+function SidebarContent({
+  profile,
+  onClose,
+}: {
+  profile: Profile
+  onClose?: () => void
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -100,12 +106,22 @@ export function Sidebar({ profile }: SidebarProps) {
     item.exact ? pathname === item.href : pathname.startsWith(item.href)
 
   return (
-    <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col h-full fixed left-0 top-0 z-40">
-      {/* Logo */}
-      <div className="px-6 py-5 border-b border-neutral-100">
+    <div className="flex flex-col h-full">
+      {/* Logo + close button (mobile) */}
+      <div className="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
         <Link href="/" className="font-display font-bold text-xl text-primary-700">
           Ampar<span className="text-primary-500">a</span>
         </Link>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -115,6 +131,7 @@ export function Sidebar({ profile }: SidebarProps) {
             <li key={item.href}>
               <Link
                 href={item.href}
+                onClick={onClose}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive(item)
                     ? 'bg-primary-50 text-primary-700'
@@ -155,6 +172,51 @@ export function Sidebar({ profile }: SidebarProps) {
           {loggingOut ? 'Saliendo...' : 'Cerrar sesión'}
         </button>
       </div>
-    </aside>
+    </div>
+  )
+}
+
+export function Sidebar({ profile }: SidebarProps) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-neutral-200 flex-col h-full fixed left-0 top-0 z-40">
+        <SidebarContent profile={profile} />
+      </aside>
+
+      {/* Mobile topbar */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-neutral-200 flex items-center px-4 h-14">
+        <button
+          onClick={() => setOpen(true)}
+          className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span className="ml-3 font-display font-bold text-lg text-primary-700">
+          Ampar<span className="text-primary-500">a</span>
+        </span>
+      </header>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/40"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={`lg:hidden fixed top-0 left-0 z-50 h-full w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <SidebarContent profile={profile} onClose={() => setOpen(false)} />
+      </aside>
+    </>
   )
 }
