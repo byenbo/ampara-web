@@ -1,10 +1,9 @@
 import { Badge } from '@/components/ui/Badge'
+import { OfferActions } from '@/components/dashboard/OfferActions'
 import type { Offer } from '@/types'
 
 interface OfferCardProps {
   offer: Offer
-  onAccept?: (id: string) => void
-  onReject?: (id: string) => void
   isOwner?: boolean
 }
 
@@ -14,7 +13,7 @@ const statusConfig = {
   rejected: { label: 'Rechazada', variant: 'red' as const },
 }
 
-export function OfferCard({ offer, onAccept, onReject, isOwner }: OfferCardProps) {
+export function OfferCard({ offer, isOwner }: OfferCardProps) {
   const status = statusConfig[offer.status]
   const name = offer.profiles?.full_name ?? 'Apoyador'
 
@@ -50,20 +49,7 @@ export function OfferCard({ offer, onAccept, onReject, isOwner }: OfferCardProps
       </div>
 
       {isOwner && offer.status === 'pending' && (
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={() => onAccept?.(offer.id)}
-            className="flex-1 py-2 rounded-lg bg-primary-700 text-white text-sm font-semibold hover:bg-primary-900 transition-colors"
-          >
-            Aceptar
-          </button>
-          <button
-            onClick={() => onReject?.(offer.id)}
-            className="flex-1 py-2 rounded-lg border border-neutral-200 text-neutral-600 text-sm font-semibold hover:bg-neutral-50 transition-colors"
-          >
-            Rechazar
-          </button>
-        </div>
+        <OfferActions offerId={offer.id} requestId={offer.request_id} />
       )}
     </div>
   )
